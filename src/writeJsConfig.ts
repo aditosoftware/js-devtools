@@ -30,10 +30,11 @@ export function createJsConfigFile(pOutput: string, pExitCode: number, pTemplate
 }
 
 /**
- * 
- * @param pExistingJsConfigJSON 
- * @param pOutput 
- * @returns 
+ * Calculate all @aditosoftware dependencies that have to be set as path extension in the jsconfig such that the JDito process files can be found and imports work as expected
+ *  
+ * @param pExistingJsConfigJSON JSON of the jsconfig.template.json to get all existing third party dependencies that are stored in the paths node
+ * @param pOutput output of the npm list -j -l command that is used to work out the currently used @aditosoftware dependencies
+ * @returns list of strings that have to be set as content of the compilerOptions.paths node in the jsconfig
  */
 export function getPathExtensionsToSet(pExistingJsConfigJSON: JsConfigJSON, pOutput: string): string[]
 {
