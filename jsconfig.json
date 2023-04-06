@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "module": "es6",
+        "moduleResolution": "node",
+        "baseUrl": ".",
+        "checkJs": true,
+        "noEmit": true,
+        "removeComments": true,
+        "strict": false,
+        "paths": {
+            "*": [
+                "process/*/process",
+                "node_modules/*/process",
+                "node_modules/@aditosoftware/*/process"
+            ],
+            "@aditosoftware/jdito-types": [
+                "node_modules/@aditosoftware/jdito-types/index"
+            ]
+        }
+    }
+}
