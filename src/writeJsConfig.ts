@@ -1,9 +1,9 @@
 import * as fs from "fs";
-import { spawn } from "node:child_process";
+import { spawn, exec, ExecException } from "node:child_process";
 
 const jsconfigTemplatePath: string = '../jsconfig.template.json'
 
-run_script("npm", ["list", "-j", "-l"], (pCommand: string, pExitCode: number) => createJsConfigFile(pCommand, pExitCode, () => {return jsconfigTemplatePath}));
+exec("npm list -j -l", (pError, pStdOut, pStdErr) => createJsConfigFile(pStdOut, pError, pStdErr, () => jsconfigTemplatePath))
 
 /**
  * Takes the ouput of a npm list -j -l process, uses it to determine the @aditosoftware dependencies of the project and creates
@@ -12,21 +12,40 @@ run_script("npm", ["list", "-j", "-l"], (pCommand: string, pExitCode: number) =>
  * @param pOutput this is the output the npm list -j -l process wrote to the console during its execution
  * @param pExitCode the exitcode that the npm command exited with, anything other than 0 here means the process encountered an error
  */
-export function createJsConfigFile(pOutput: string, pExitCode: number, pTemplatePathFn: () => string): void
+function createJsConfigFile(pOutput: string, pError: ExecException | null, pStdErr: string, pTemplatePathFn: () => string): void
 {
-    if (pExitCode != 0) 
+    if (pError !== null) 
     {
-        console.log("npm list command failed with exit code " + pExitCode + ", cannot create jsconfig");
+        console.log("npm list command failed due to " + `${pError.name}: ${pError.message}` + ".\nError output: " + pStdErr + "\nCannot create jsconfig");
         return;
     }
 
-    const json: JsConfigJSON = getJsConfigJSON(pTemplatePathFn);
-    
-    // override the old value for the * rule pathExtensions
-    json.compilerOptions.paths['*'] = getPathExtensionsToSet(json, pOutput);
+    const json: JsConfigJSON = transformTemplate(getJsConfigJSON(pTemplatePathFn), pOutput);
 
     // write to disk and use 4 spaces for formatting
     fs.writeFileSync('jsconfig.json', JSON.stringify(json, null, 4));
+}
+
+/**
+ * Transform the JSON from the jsconfig.template.json to the JSON that should be used to write the acutal jsconfig.json
+ * 
+ * @param pTemplateJSON JSON of the jsconfig.template.json
+ * @param pOutput output of the npm list -j -l command that is used to work out the currently used @aditosoftware dependencies
+ * @returns JSON modified such that the compilerOptions.paths.* node is set to contain the existing third party dependencies from the template and all the properly formatted @aditosoftware dependencies
+ */
+export function transformTemplate(pTemplateJSON: JsConfigJSON, pOutput: string): JsConfigJSON 
+{
+    if(typeof pTemplateJSON.compilerOptions === "undefined")
+    {
+        pTemplateJSON.compilerOptions = {};
+    }
+    if(typeof pTemplateJSON.compilerOptions.paths === "undefined")
+    {
+        pTemplateJSON.compilerOptions.paths = {};
+    }
+    // override the old value for the * rule pathExtensions
+    pTemplateJSON.compilerOptions.paths['*'] = getPathExtensionsToSet(pTemplateJSON, pOutput);
+    return pTemplateJSON;
 }
 
 /**
@@ -44,7 +63,7 @@ export function getPathExtensionsToSet(pExistingJsConfigJSON: JsConfigJSON, pOut
     let pathExtensions: string[] = getExistingThirdPartyDependencies(pExistingJsConfigJSON);
 
     // for all @aditosoftware dependencies gathered from the output of npm list we create the path for the * rule for each dependency and add it to the pathExtensions
-    aditoDependencies.forEach((pDependency: string): number => pathExtensions.push('node_modules/' + pDependency + '/process/*/process'));
+    aditoDependencies.forEach(pDependency => pathExtensions.push(`node_modules/${pDependency}/process/*/process`));
     return pathExtensions;
 }
 
@@ -63,7 +82,7 @@ export function getJsConfigJSON(pTemplatePathFn: () => string) : JsConfigJSON
     {
         try
         {
-            const fileContents: string = fs.readFileSync(templatePath, {"encoding": "utf-8"});
+            const fileContents: string = fs.readFileSync(templatePath, {encoding: "utf-8"});
             json = JSON.parse(fileContents);
         } catch
         {
@@ -84,11 +103,8 @@ export function getJsConfigJSON(pTemplatePathFn: () => string) : JsConfigJSON
  */
 export function getExistingThirdPartyDependencies(pJsConfigJSON: JsConfigJSON): string[]
 {
-    let pathValues: string[] = pJsConfigJSON.compilerOptions.paths['*'];
-    if(typeof pathValues === "undefined")
-    {
-        pathValues = new Array();
-    }
+    const paths = pJsConfigJSON.compilerOptions?.paths ?? {};
+    const pathValues = paths['*'] ?? [];
     return pathValues.filter((pValue: String): boolean => !pValue.startsWith('@aditosoftware'));
 }
 
@@ -100,68 +116,16 @@ export function getExistingThirdPartyDependencies(pJsConfigJSON: JsConfigJSON): 
  */
 export function parseAditoDependencies(pOutput: string): string[] 
 {
-    const aditoDependencies: string[] = new Array();
-
     let jsonObj: NpmListJSON = JSON.parse(pOutput);
-    for (let key in jsonObj.dependencies) 
-    {
-        if(key.startsWith('@aditosoftware')) 
-        {
-            aditoDependencies.push(key);
-        }
-    }
-
-    return aditoDependencies;
-}
-
-/**
- * Runs a given process with the provided arguments, waits for the process to finish its execution and then calls the callback with the output of the process and the exit code
- * 
- * @param command process to execute
- * @param args arguments to pass to the process
- * @param callback function to be executed on completion of the process. Has the console output of the process as first parameter, and the exit code as second parameter
- */
-function run_script(command: string, args: string[], callback: (pParam1: string, pExitCode: number) => void): void
-{
-    var child = spawn(command, args);
-
-    // used to collect the console output of the process
-    var scriptOutput: string = "";
-
-    // log the errors to console, to make searching for errors/problems easier
-    child.on("error", function(data: string)
-    {
-        console.log("error: " + data);
-    });
-
-    // add normal data output by the process to the variable tracking the script output
-    child.stdout.setEncoding("utf8");
-    child.stdout.on("data", function(data: string) 
-    {
-        scriptOutput += data;
-    });
-
-    // add data of the error stream output of the process to the variable tracking the script output
-    child.stderr.setEncoding("utf8");
-    child.stderr.on("data", function(data: string) 
-    {
-        // log the errors to console, to making identifying what went wrong easier
-        console.log("error: " + data);
-        scriptOutput += data;
-    });
-
-    // call the callback function when the process is terminated
-    child.on("close", function(code: any) 
-    {
-        callback(scriptOutput, code);
-    });
+    return Object.keys(jsonObj.dependencies ?? {})
+       .filter(key => key.startsWith('@aditosoftware')) ?? [];
 }
 
 /**
  * Describes the JSON structure of the JsConfig - or at the least the part of the structure we are interested in
  */
 export interface JsConfigJSON {
-    compilerOptions: CompilerOptions;
+    compilerOptions?: CompilerOptions;
 }
 
 /**
@@ -176,7 +140,7 @@ export interface CompilerOptions {
     noEmit?: boolean,
     removeComments?: boolean;
     strict?: boolean,
-    paths: {[key: string]: string[]}
+    paths?: {[key: string]: string[]}
 }
 
 /**
