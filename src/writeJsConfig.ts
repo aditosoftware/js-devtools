@@ -35,14 +35,8 @@ function createJsConfigFile(pOutput: string, pError: ExecException | null, pStdE
  */
 export function transformTemplate(pTemplateJSON: JsConfigJSON, pOutput: string): JsConfigJSON 
 {
-    if(typeof pTemplateJSON.compilerOptions === "undefined")
-    {
-        pTemplateJSON.compilerOptions = {};
-    }
-    if(typeof pTemplateJSON.compilerOptions.paths === "undefined")
-    {
-        pTemplateJSON.compilerOptions.paths = {};
-    }
+    pTemplateJSON.compilerOptions ??= {};
+    pTemplateJSON.compilerOptions.paths ??= {};
     // override the old value for the * rule pathExtensions
     pTemplateJSON.compilerOptions.paths['*'] = getPathExtensionsToSet(pTemplateJSON, pOutput);
     return pTemplateJSON;
