@@ -1,4 +1,4 @@
-import { getExistingThirdPartyDependencies, JsConfigJSON, parseAditoDependencies, getDefaultConfigTemplate, getJsConfigJSON, transformTemplate } from "../src/writeJsConfig.js";
+import { getExistingThirdPartyDependencies, JsConfigJSON, parseAditoDependencies, getDefaultConfigTemplate, getJsConfigJSON, transformTemplate } from "../src/jsConfigUtil.js";
 import * as assert from "node:assert";
 import * as fs from "fs";
 
