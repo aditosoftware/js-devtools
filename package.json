@@ -15,7 +15,7 @@
         "typescript": "^4.9.5"
     },
     "scripts": {
-        "test": "tsc && mocha 'test/**/*.js'",
+        "test": "tsc && mocha \"test/*.spec.js\"",
         "preinstall": "npm run test"
     }
 }
