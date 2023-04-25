@@ -16,6 +16,6 @@
     },
     "scripts": {
         "test": "tsc && mocha \"test/*.spec.js\"",
-        "preinstall": "npm run test"
+        "install_and_test": "npm install && npm run test"
     }
 }
