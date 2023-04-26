@@ -17,5 +17,5 @@
         "test": "tsc && mocha \"test/*.spec.js\"",
         "install_and_test": "npm install && npm run test"
     },
-    "files": ["/src/**.ts"]
+    "files": ["/src/**.ts", "tsconfig.json"]
 }
