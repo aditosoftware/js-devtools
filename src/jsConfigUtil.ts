@@ -122,8 +122,7 @@ function getAditoDependenciesRecursive(jsonOutput: NpmListJSON): string[]
     let aditoDependencies = Object.keys(jsonOutput.dependencies ?? {})
     .filter(key => key.startsWith('@aditosoftware')) ?? [];
     return aditoDependencies.concat(aditoDependencies
-        .map(dependency => getAditoDependenciesRecursive(jsonOutput.dependencies?.[dependency] ?? {}))
-        .flat());
+        .flatMap(dependency => getAditoDependenciesRecursive(jsonOutput.dependencies?.[dependency] ?? {})));
 }
 
 /**
@@ -153,7 +152,7 @@ export interface CompilerOptions {
  */
 export interface NpmListJSON {
     version: string,
-    dependencies: {[key: string]: NpmListJSON}
+    dependencies: Record<string, NpmListJSON>
 }
 
 /**
