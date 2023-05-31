@@ -92,6 +92,69 @@ describe("ParseAditoDependencies Tests", () => {
     it("Should return no dependencies ony invalid JSON", () => {
         const dependencies: string[] = parseAditoDependencies("4");
         assert.equal([].toString(), dependencies.toString());
+    }),
+    /**
+     * The algorithm should be able to parse transitive dependencies as well
+     */
+    it("Should be able to handle dependencies of dependencies", () => {
+        const dependencies: string[] = parseAditoDependencies(JSON.stringify({
+            "version": "2023.0.0-SNAPSHOT.1",
+            "name": "@aditosoftware/object-tree",
+            "dependencies": {
+              "@aditosoftware/contactmanagement-basic": {
+                "version": "1.0.8",
+                "dependencies": {
+                  "@aditosoftware/attribute": {
+                    "version": "1.2.0",
+                    "dependencies": {
+                      "@aditosoftware/keyword": {
+                        "version": "1.2.1"
+                      },
+                      "@aditosoftware/root": {
+                        "version": "1.3.0"
+                      },
+                      "@aditosoftware/utility": {
+                        "version": "1.3.4"
+                      }
+                    }
+                  },
+                  "@aditosoftware/document": {
+                    "version": "1.3.0",
+                    "dependencies": {
+                      "@aditosoftware/root": {
+                        "version": "1.3.0"
+                      },
+                      "@aditosoftware/utility": {
+                        "version": "1.3.4"
+                      }
+                    }
+                  },
+                  "@aditosoftware/event-handler": {
+                    "version": "1.1.0",
+                    "dependencies": {
+                      "@aditosoftware/utility": {
+                        "version": "1.3.4"
+                      }
+                    }
+                  },
+                  "@aditosoftware/favorite": {
+                    "version": "1.2.1",
+                    "dependencies": {
+                      "@aditosoftware/root": {
+                        "version": "1.3.0"
+                      },
+                      "@aditosoftware/utility": {
+                        "version": "1.3.4"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }));
+        assert.equal(["@aditosoftware/contactmanagement-basic", "@aditosoftware/attribute", "@aditosoftware/document", "@aditosoftware/event-handler",
+        "@aditosoftware/favorite", "@aditosoftware/keyword", "@aditosoftware/root", "@aditosoftware/utility"].toString(),
+        dependencies.toString());
     })
 })
 
