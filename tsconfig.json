@@ -9,6 +9,9 @@
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "strictNullChecks": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "lib": [
+            "es2019"
+          ]
     }
 }

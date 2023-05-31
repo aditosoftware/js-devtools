@@ -107,8 +107,22 @@ export function getExistingThirdPartyDependencies(pJsConfigJSON: JsConfigJSON): 
 export function parseAditoDependencies(pOutput: string): string[] 
 {
     let jsonObj: NpmListJSON = JSON.parse(pOutput);
-    return Object.keys(jsonObj.dependencies ?? {})
-       .filter(key => key.startsWith('@aditosoftware')) ?? [];
+    // use a Set as intermediary step to eliminate duplicate elements
+    return Array.from(new Set(getAditoDependenciesRecursive(jsonObj)));
+}
+
+/**
+ * Goes through all dependencies of the given JSON and extracts the dependencies with organization scope @aditosoftware
+ * 
+ * @param jsonOutput NpmListJSON object containing the dependencies
+ * @returns all dependencies (including transitive dependencies) whose organization scope is @aditosoftware
+ */
+function getAditoDependenciesRecursive(jsonOutput: NpmListJSON): string[]
+{
+    let aditoDependencies = Object.keys(jsonOutput.dependencies ?? {})
+    .filter(key => key.startsWith('@aditosoftware')) ?? [];
+    return aditoDependencies.concat(aditoDependencies
+        .flatMap(dependency => getAditoDependenciesRecursive(jsonOutput.dependencies?.[dependency] ?? {})));
 }
 
 /**
@@ -137,7 +151,8 @@ export interface CompilerOptions {
  * Describes the part of the JSON structure of the npm list -j -l output that we are interested in. There are many other key-value pairs in the full structure, but we are not interested in those
  */
 export interface NpmListJSON {
-    dependencies: {[key: string]: object}
+    version: string,
+    dependencies: Record<string, NpmListJSON>
 }
 
 /**
