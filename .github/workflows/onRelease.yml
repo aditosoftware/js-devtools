@@ -18,10 +18,6 @@ jobs:
          scope: '@aditosoftware'
          always-auth: true
 
-     - run: npm config list
-       env:
-         NODE_AUTH_TOKEN: ${{ secrets.NEXUS_NPM_TOKEN }}
-
      - run: npm run install_and_test
        env:
          NODE_AUTH_TOKEN: ${{ secrets.NEXUS_NPM_TOKEN }}
