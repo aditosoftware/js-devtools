@@ -14,8 +14,8 @@ jobs:
        with:
          node-version: '18.x'
          registry-url: 'https://nexus.adito.cloud/repository/xrm'
-     - run: npm set //nexus.adito.cloud/repository/xrm:_authToken ${{ secrets.NEXUS_NPM_TOKEN }}
+         always-auth: true
      - run: npm run install_and_test
-     - run: npm publish --access public
+     - run: npm publish
        env:
          NODE_AUTH_TOKEN: ${{ secrets.NEXUS_NPM_TOKEN }}
