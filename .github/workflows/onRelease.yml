@@ -18,7 +18,7 @@ jobs:
          scope: '@aditosoftware'
          always-auth: true
 
-     - run: npm set //nexus.adito.cloud/repository/xrm/:_auth ${{ secrets.NEXUS_NPM_TOKEN }}
+     - run: npm set //nexus.adito.cloud/repository/xrm/:_auth ${{ secrets.NEXUS_NPM_TOKEN }} && npm config delete //nexus.adito.cloud/repository/xrm/:_authToken
 
      - run: npm config list
 
