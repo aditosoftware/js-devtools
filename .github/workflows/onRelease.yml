@@ -20,6 +20,8 @@ jobs:
 
      - run: npm set //nexus.adito.cloud/repository/xrm/:_auth ${{ secrets.NEXUS_NPM_TOKEN }}
 
+     - run: npm config list
+
      - run: npm run install_and_test
 
      - run: npm publish
