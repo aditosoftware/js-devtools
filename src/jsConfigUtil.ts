@@ -108,7 +108,7 @@ export function parseAditoDependencies(pOutput: string): string[]
 {
     let jsonObj: NpmListJSON = JSON.parse(pOutput);
     // use a Set as intermediary step to eliminate duplicate elements
-    return Array.from(new Set(getAditoDependenciesRecursive(jsonObj)));
+    return Array.from(new Set(getAditoDependenciesRecursive(jsonObj))).sort((a,b) =>  (a > b ? 1 : -1));
 }
 
 /**
