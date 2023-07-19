@@ -5,4 +5,4 @@ const { exec, ExecException } = require("node:child_process");
 const jsconfigTemplatePath: string = 'jsconfig.template.json';
 
 // execute the npm list command and pass the output to the createJsConfigFile method to create the jsconfig.json file
-exec("npm list -j -l", (pError: typeof ExecException | null, pStdOut: string, pStdErr: string) => createJsConfigFile(pStdOut, pError, pStdErr, () => jsconfigTemplatePath))
+exec("npm list -a -j", (pError: typeof ExecException | null, pStdOut: string, pStdErr: string) => createJsConfigFile(pStdOut, pError, pStdErr, () => jsconfigTemplatePath))

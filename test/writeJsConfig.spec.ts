@@ -77,7 +77,7 @@ describe("ParseAditoDependencies Tests", () => {
      */
     it("Should return the all adito dependencies", () => {
         const dependencies: string[] = parseAditoDependencies(JSON.stringify({dependencies: {"test": [], "@aditosoftware/util": [], "@aditosoftware/root": []}}));
-        assert.equal(["@aditosoftware/util", "@aditosoftware/root"].toString(), dependencies.toString());
+        assert.equal(["@aditosoftware/root", "@aditosoftware/util"].toString(), dependencies.toString());
     }),
     /**
      * If there is no dependencies node in the JSON, no dependencies should be returned
@@ -152,7 +152,7 @@ describe("ParseAditoDependencies Tests", () => {
               }
             }
           }));
-        assert.equal(["@aditosoftware/contactmanagement-basic", "@aditosoftware/attribute", "@aditosoftware/document", "@aditosoftware/event-handler",
+        assert.equal(["@aditosoftware/attribute", "@aditosoftware/contactmanagement-basic", "@aditosoftware/document", "@aditosoftware/event-handler",
         "@aditosoftware/favorite", "@aditosoftware/keyword", "@aditosoftware/root", "@aditosoftware/utility"].toString(),
         dependencies.toString());
     })
